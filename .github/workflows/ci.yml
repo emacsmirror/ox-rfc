@@ -1,0 +1,29 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        org_release: ["9.6.30", "9.7.11"]
+        os: [ ubuntu-22.04, ubuntu-24.04]
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Install Packages
+        run: |
+          uname -a
+          sudo apt-get install -y emacs python3-pip python3-venv tidy
+          python3 -m venv ~/venv
+          . ~/venv/bin/activate
+          python3 -m pip install pyang xml2rfc
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Test
+        run: |
+          . ~/venv/bin/activate
+          make ORG_RELEASE=${{ matrix.org_release }} test

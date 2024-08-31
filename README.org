@@ -3,7 +3,8 @@
 * Org Mode RFC XML Exporter
 
 # Travis (master): [[https://travis-ci.org/choppsv1/org-rfc-export][https://travis-ci.org/choppsv1/org-rfc-export.svg?branch=master]]
-CircleCI [[https://circleci.com/gh/choppsv1/org-rfc-export][https://circleci.com/gh/choppsv1/org-rfc-export.svg?style=svg]]
+# CircleCI [https://circleci.com/gh/choppsv1/org-rfc-export][https://circleci.com/gh/choppsv1/org-rfc-export.svg?style=svg]]
+TEST: [[https://github.com/choppsv1/org-rfc-export/actions/workflows/ci.yml/badge.svg]]
 MELPA: [[https://melpa.org/#/ox-rfc][https://melpa.org/packages/ox-rfc-badge.svg]]
 
 This is an org mode export back-end to convert an Org mode formatted file into
