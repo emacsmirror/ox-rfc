@@ -477,10 +477,12 @@ channel."
          (capstr (string-join (org-export-get-caption a-block)))
          (v3 (ox-rfc-render-v3))
          (v2 (not v3))
-         (titleattr (if (and v2 caption) (format " title=\"%s\" anchor=\"%s\"" capstr (ox-rfc--headline-to-anchor capstr)) ""))
-         (nameattr (if (and v3 caption) (format "<name>%s</name>" capstr) ""))
-         (figopen (if (or v2 caption) (format "<figure%s>%s" titleattr nameattr) ""))
-         (figclose (if (or v2 caption) "</figure>" ""))
+         (orgname (org-element-property :name a-block))
+         (anchorattr (if orgname (format " anchor=\"%s\"" orgname) (ox-rfc--headline-to-anchor capstr)))
+         (titleattr (if (and v2 caption) (format " title=\"%s\"" capstr) ""))
+         (nameattr (if (and v3 caption) (format "<name>%s</name>\n" capstr) ""))
+         (figopen (if (or v2 caption) (format "<figure%s%s>\n%s" titleattr anchorattr nameattr) ""))
+         (figclose (if (or v2 caption) "</figure>\n" ""))
          (codetag (if (and is-src (ox-rfc-render-v3)) "sourcecode" "artwork"))
          ;; Check for yang to special handle
          (language (or (org-element-property :language a-block) "unknown"))
@@ -678,10 +680,21 @@ a communication channel."
      ((member type '("custom-id" "id" "fuzzy"))
       (let ((destination (if (string= type "fuzzy")
                              (org-export-resolve-fuzzy-link link info)
-                           (org-export-resolve-id-link link info))))
+                           (org-export-resolve-id-link link info)))
+            (lpath (org-element-property :path link)))
+        ;; (message "XXX pcase: %10s link-type %10s dest-title %s dest-name %s dest-CUSTOM_ID %s link-CUSTOM_ID %s link-path %s"
+        ;;          (org-element-type destination)
+        ;;          type
+        ;;          (org-element-property :title destination)
+        ;;          (org-element-property :name destination)
+        ;;          (org-element-property :CUSTOM_ID destination)
+        ;;          (org-element-property :CUSTOM_ID link)
+        ;;          (org-element-property :path link)
+        ;;          )
         (pcase (org-element-type destination)
           (`headline
-           (let* ((dtitle (org-export-data (org-element-property :title destination) info))
+           (let* (
+                  (dtitle (org-export-data (org-element-property :title destination) info))
                   (dparent (org-export-get-parent-element destination))
                   (pname (org-element-property :raw-value dparent)))
              (cond
@@ -689,31 +702,32 @@ a communication channel."
               ((member pname '("Informative References" "Normative References"))
                ;; A reference to one of the reference sections
                (format "<xref target=\"%s\"/>" dtitle))
+              ((not (org-string-nw-p contents))
+               (format "<xref target=\"%s\"/>"
+                       (or (org-element-property :CUSTOM_ID destination)
+                           (ox-rfc--headline-to-anchor dtitle))))
               (t
-               ;; Need to normalize references to allow for non leading zeros
+               ;; - Need to normalize references to allow for non leading zeros.
+               ;; - Using counter as a work-around until "none" is available.
                (format
-                "<xref%s target=\"%s\">%s</xref>"
-                ;; using counter as a work-around until "none" is available.
-                (if (org-string-nw-p contents) " format=\"counter\"" "")
-                ;; Reference.
+                "<xref format=\"counter\" target=\"%s\">%s</xref>"
                 (or (org-element-property :CUSTOM_ID destination)
                     (ox-rfc--headline-to-anchor dtitle))
-                ;; (org-export-get-reference destination info))
-                ;; Description.
-                (cond ((org-string-nw-p contents))
-                      (t "")))))))
+                (org-string-nw-p contents))))))
           (_
-           (let ((description
-                  (or (org-string-nw-p contents)
-                      (let ((number (org-export-get-ordinal destination info)))
-                        (cond
-                         ((not number) nil)
-                         ((atom number) (number-to-string number))
-                         (t (mapconcat #'number-to-string number ".")))))))
-             (when description
-               (format "<xref target=\"%s\">%s</xref>"
-                       (org-export-get-reference destination info)
-                       contents)))))))
+           (if lpath
+               (format "<xref target=\"%s\"/>" lpath)
+             (let ((description
+                    (or (org-string-nw-p contents)
+                        (let ((number (org-export-get-ordinal destination info)))
+                          (cond
+                           ((not number) nil)
+                           ((atom number) (number-to-string number))
+                           (t (mapconcat #'number-to-string number ".")))))))
+               (when description
+                 (format "<xref target=\"%s\">%s</xref>"
+                         (org-export-get-reference destination info)
+                         contents))))))))
      ;; Need to test this case.
      (t (let* ((raw-path (org-element-property :path link))
                (path
@@ -970,6 +984,8 @@ contextual information."
                      info))
    (t
     (let* ((caption (org-export-get-caption table))
+           (orgname (org-element-property :name table))
+           (anchorattr (if orgname (format " anchor=\"%s\"" orgname) ""))
            ;; May want to support in future.
            ;; (number (org-export-get-ordinal
            ;;          table info nil #'org-html--has-caption-p))
@@ -979,7 +995,8 @@ contextual information."
            ;;    "class=\"org-%s\""))
            )
       (if (ox-rfc-render-v3)
-          (format "<table>\n%s\n%s</table>"
+          (format "<table%s>\n%s\n%s</table>"
+                  anchorattr
                   (if (not caption) ""
                     (format "<name>%s</name>" (org-export-data caption info)))
                   contents)
