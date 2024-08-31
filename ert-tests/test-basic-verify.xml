@@ -37,12 +37,12 @@ writing this section perhaps you might need to refer to a non-SDO document such
 as <xref target="StudyScarlet"/>.</t>
 
 <section title="Subsection of First Section">
-<t>Here's a subsection of the <xref target="sec-first-section"></xref>.</t>
+<t>Here's a subsection of the <xref target="sec-first-section"/>.</t>
 
 </section>
 
 <section title="Subsection of First Section">
-<t>Here's a subsection of the <xref target="sec-first-section"></xref> with embedded XML.</t>
+<t>Here's a subsection of the <xref target="sec-first-section"/> with following text.</t>
 
 </section>
 
@@ -68,29 +68,29 @@ as <xref target="StudyScarlet"/>.</t>
 <references title="Normative References">
 
 
-<reference  anchor='RFC2119' target='https://www.rfc-editor.org/info/rfc2119'>
+<reference  anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119">
 <front>
 <title>Key words for use in RFCs to Indicate Requirement Levels</title>
-<author initials='S.' surname='Bradner' fullname='S. Bradner'><organization /></author>
-<date year='1997' month='March' />
+<author fullname="S. Bradner" initials="S." surname="Bradner" />
+<date month="March" year="1997" />
 <abstract><t>In many standards track documents several words are used to signify the requirements in the specification.  These words are often capitalized. This document defines these words as they should be interpreted in IETF documents.  This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t></abstract>
 </front>
-<seriesInfo name='BCP' value='14'/>
-<seriesInfo name='RFC' value='2119'/>
-<seriesInfo name='DOI' value='10.17487/RFC2119'/>
+<seriesInfo name="BCP" value="14"/>
+<seriesInfo name="RFC" value="2119"/>
+<seriesInfo name="DOI" value="10.17487/RFC2119"/>
 </reference>
 
 
-<reference  anchor='RFC8174' target='https://www.rfc-editor.org/info/rfc8174'>
+<reference  anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174">
 <front>
 <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
-<author initials='B.' surname='Leiba' fullname='B. Leiba'><organization /></author>
-<date year='2017' month='May' />
+<author fullname="B. Leiba" initials="B." surname="Leiba" />
+<date month="May" year="2017" />
 <abstract><t>RFC 2119 specifies common key words that may be used in protocol  specifications.  This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the  defined special meanings.</t></abstract>
 </front>
-<seriesInfo name='BCP' value='14'/>
-<seriesInfo name='RFC' value='8174'/>
-<seriesInfo name='DOI' value='10.17487/RFC8174'/>
+<seriesInfo name="BCP" value="14"/>
+<seriesInfo name="RFC" value="8174"/>
+<seriesInfo name="DOI" value="10.17487/RFC8174"/>
 </reference>
 </references>
 <references title="Informative References">
@@ -103,16 +103,16 @@ as <xref target="StudyScarlet"/>.</t>
 </reference>
 
 
-<reference  anchor='RFC7322' target='https://www.rfc-editor.org/info/rfc7322'>
+<reference  anchor="RFC7322" target="https://www.rfc-editor.org/info/rfc7322">
 <front>
 <title>RFC Style Guide</title>
-<author initials='H.' surname='Flanagan' fullname='H. Flanagan'><organization /></author>
-<author initials='S.' surname='Ginoza' fullname='S. Ginoza'><organization /></author>
-<date year='2014' month='September' />
+<author fullname="H. Flanagan" initials="H." surname="Flanagan" />
+<author fullname="S. Ginoza" initials="S." surname="Ginoza" />
+<date month="September" year="2014" />
 <abstract><t>This document describes the fundamental and unique style conventions and editorial policies currently in use for the RFC Series.  It captures the RFC Editor's basic requirements and offers guidance regarding the style and structure of an RFC.  Additional guidance is captured on a website that reflects the experimental nature of that guidance and prepares it for future inclusion in the RFC Style Guide.  This document obsoletes RFC 2223, &quot;Instructions to RFC Authors&quot;.</t></abstract>
 </front>
-<seriesInfo name='RFC' value='7322'/>
-<seriesInfo name='DOI' value='10.17487/RFC7322'/>
+<seriesInfo name="RFC" value="7322"/>
+<seriesInfo name="DOI" value="10.17487/RFC7322"/>
 </reference>
 
 

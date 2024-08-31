@@ -160,8 +160,8 @@
   :menu-entry
   '(?r "Export to RFC"
        ((?X "To XML temporary buffer"
-	    (lambda (a s v b) (ox-rfc-export-as-xml a s v)))
-	(?x "To XML file" (lambda (a s v b) (ox-rfc-export-to-xml a s v)))
+            (lambda (a s v b) (ox-rfc-export-as-xml a s v)))
+        (?x "To XML file" (lambda (a s v b) (ox-rfc-export-to-xml a s v)))
         (?H "To HTML file and open."
             (lambda (a s v b) (if a
                                   (ox-rfc-export-to-html t s v)
@@ -174,9 +174,9 @@
         ;; (?p "To PDF file" (lambda (a s v b) (ox-rfc-export-to-pdf a s v)))
         (?T "To TEXT temporary buffer" (lambda (a s v b) (ox-rfc-export-as-text a s v)))
         ;; (?t "To TEXT file" (lambda (a s v b) (ox-rfc-export-to-text a s v)))
-	(?o "To TEXT file and open"
+        (?o "To TEXT file and open"
             (lambda (a s v b)
-	      (if a
+              (if a
                   (ox-rfc-export-to-text t s v)
                 (org-open-file (ox-rfc-export-to-text nil s v)))))))
   :options-alist
@@ -192,6 +192,7 @@
     (:rfc-ipr "RFC_IPR" nil "trust200902" t)
     (:rfc-name "RFC_NAME" nil nil t)
     (:rfc-obsoletes "RFC_OBSOLETES" nil nil space)
+    (:rfc-short-org "RFC_SHORT_ORG" nil nil t)
     (:rfc-short-title "RFC_SHORT_TITLE" nil nil t)
     (:rfc-stream "RFC_STREAM" nil "IETF" t)
     (:rfc-updates "RFC_UPDATES" nil nil space)
@@ -392,29 +393,35 @@ If INCVER is t then override the options export environment setting."
          (editor (plist-get info :editor))
          (add-authors-prop (plist-get info :rfc-add-author))
          (add-authors (mapcar (lambda (e) (if (string-prefix-p "(" e)
-                                             (read e)
-                                           (list e)))
-                             (if add-authors-prop (split-string add-authors-prop "\n+") '())))
+                                              (read e)
+                                            (list e)))
+                              (if add-authors-prop (split-string add-authors-prop "\n+") '())))
          (sfmt (if editor "<author role='editor' %s/>" "<author %s/>"))
          (etag "</author>")
-         (ofmt "<organization>%s</organization>")
-         (efmt "<address><email>%s</email></address>")
+         (ofmt "<organization%s>%s</organization>\n")
+         (efmt "<address><email>%s</email></address>\n")
          (afmt (if editor "<author role=\"editor\" %s>" "<author %s>")))
     (setq author (if (or editor author)
                      (let ((author (list (or editor author)))
                            (affiliation (plist-get info :affiliation))
+                           (short-org (plist-get info :rfc-short-org))
                            (email (plist-get info :email)))
                        (if email (setq author (append author (list email))))
+                       (if (and affiliation short-org)
+                           (setq affiliation (list (read short-org) (read affiliation))))
                        (if affiliation (setq author (append author (list affiliation))))
                        (list author))
                    '()))
     (mapconcat (lambda (x) (if (not (listp x))
                                (format sfmt (ox-rfc-author-attrib x))
-                             (let ((a (car x))
-                                   (e (cadr x))
-                                   (o (cadr (cdr x))))
+                             (let* ((a (car x))
+                                    (e (cadr x))
+                                    (oelt (cadr (cdr x)))
+                                    (o (or (and (listp oelt) (cadr oelt)) oelt))
+                                    (oabbr (and (listp oelt) (car oelt)))
+                                    (oattr (or (and oabbr (format " abbrev=\"%s\"" oabbr)) "")))
                                (concat (format afmt (ox-rfc-author-attrib a))
-                                       (if o (format ofmt o) "")
+                                       (if o (format ofmt oattr o) "")
                                        (if e (format efmt e) "")
                                        etag))))
                (append author add-authors)
@@ -477,10 +484,12 @@ channel."
          (capstr (string-join (org-export-get-caption a-block)))
          (v3 (ox-rfc-render-v3))
          (v2 (not v3))
-         (titleattr (if (and v2 caption) (format " title=\"%s\" anchor=\"%s\"" capstr (ox-rfc--headline-to-anchor capstr)) ""))
-         (nameattr (if (and v3 caption) (format "<name>%s</name>" capstr) ""))
-         (figopen (if (or v2 caption) (format "<figure%s>%s" titleattr nameattr) ""))
-         (figclose (if (or v2 caption) "</figure>" ""))
+         (orgname (org-element-property :name a-block))
+         (anchorattr (if orgname (format " anchor=\"%s\"" orgname) (ox-rfc--headline-to-anchor capstr)))
+         (titleattr (if (and v2 caption) (format " title=\"%s\"" capstr) ""))
+         (nameattr (if (and v3 caption) (format "<name>%s</name>\n" capstr) ""))
+         (figopen (if (or v2 caption) (format "<figure%s%s>\n%s" titleattr anchorattr nameattr) ""))
+         (figclose (if (or v2 caption) "</figure>\n" ""))
          (codetag (if (and is-src (ox-rfc-render-v3)) "sourcecode" "artwork"))
          ;; Check for yang to special handle
          (language (or (org-element-property :language a-block) "unknown"))
@@ -572,8 +581,8 @@ a communication channel."
     (let* ((ptitle (org-export-data (org-element-property :title (org-export-get-parent headline)) info))
            (title (org-trim (org-export-data (org-element-property :title headline) info))))
       (let ((anchor (or (and (ox-rfc--headline-referred-p headline info)
-		             (format " anchor=\"%s\""
-			             (or (org-element-property :CUSTOM_ID headline)
+                             (format " anchor=\"%s\""
+                                     (or (org-element-property :CUSTOM_ID headline)
                                          (ox-rfc--headline-to-anchor title)
                                          ;; (org-export-get-reference headline info)
                                          )))
@@ -589,7 +598,7 @@ a communication channel."
          ((member ptitle '("Normative References" "Informative References"))
           (ox-rfc-reference headline contents info))
          (t (format "<section title=\"%s\"%s>\n%s\n</section>\n" title anchor
-                 contents)))))))
+                    contents)))))))
 
 (defun ox-rfc--headline-referred-p (headline info)
   "Non-nil when HEADLINE is being referred to.
@@ -599,11 +608,11 @@ of contents can refer to headlines."
     ;; A link refers internally to HEADLINE.
     (org-element-map (plist-get info :parse-tree) 'link
       (lambda (link)
-	(eq headline
-	    (pcase (org-element-property :type link)
-	      ((or "custom-id" "id") (org-export-resolve-id-link link info))
-	      ("fuzzy" (org-export-resolve-fuzzy-link link info))
-	      (_ nil))))
+        (eq headline
+            (pcase (org-element-property :type link)
+              ((or "custom-id" "id") (org-export-resolve-id-link link info))
+              ("fuzzy" (org-export-resolve-fuzzy-link link info))
+              (_ nil))))
       info t)))
 
 ;;;; Italic
@@ -624,29 +633,29 @@ as a communication channel."
 CONTENTS is the item contents.  INFO is a plist used as
 a communication channel."
   (progn
-  (let* ((type (org-element-property :type (org-export-get-parent item)))
-	 (struct (org-element-property :structure item))
-	 (_bullet (if (not (eq type 'ordered)) "-"
-		    (concat (number-to-string
-			     (car (last (org-list-get-item-number
-					 (org-element-property :begin item)
-					 struct
-					 (org-list-prevs-alist struct)
-					 (org-list-parents-alist struct)))))
-			    "."))))
-    (let ((tag (org-element-property :tag item))
-          (contents (org-trim contents)))
-      (if (not (ox-rfc-render-v3))
+    (let* ((type (org-element-property :type (org-export-get-parent item)))
+           (struct (org-element-property :structure item))
+           (_bullet (if (not (eq type 'ordered)) "-"
+                      (concat (number-to-string
+                               (car (last (org-list-get-item-number
+                                           (org-element-property :begin item)
+                                           struct
+                                           (org-list-prevs-alist struct)
+                                           (org-list-parents-alist struct)))))
+                              "."))))
+      (let ((tag (org-element-property :tag item))
+            (contents (org-trim contents)))
+        (if (not (ox-rfc-render-v3))
+            (cond
+             (tag
+              (replace-regexp-in-string "<t>" (format "<t hangText=\"%s:\"><vspace/>"
+                                                      (org-export-data tag info)) contents))
+             (t (org-trim contents)))
           (cond
            (tag
-            (replace-regexp-in-string "<t>" (format "<t hangText=\"%s:\"><vspace/>"
-                                                    (org-export-data tag info)) contents))
-           (t (org-trim contents)))
-        (cond
-         (tag
-          (format "<dt>%s</dt><dd>%s</dd>" (org-export-data tag info) contents))
-         (t
-          (format "<li>%s</li>" contents))))))))
+            (format "<dt>%s</dt><dd>%s</dd>" (org-export-data tag info) contents))
+           (t
+            (format "<li>%s</li>" contents))))))))
 
 ;;;; Line Break
 
@@ -666,22 +675,33 @@ channel."
 CONTENTS is the link's description.  INFO is a plist used as
 a communication channel."
   (let ((link-org-files-as-rfc
-	 (lambda (raw-path)
-	   ;; Treat links to `file.org' as links to `file.xml'.
-	   (if (string= ".org" (downcase (file-name-extension raw-path ".")))
-	       (concat (file-name-sans-extension raw-path) ".xml")
-	     raw-path)))
-	(type (org-element-property :type link)))
+         (lambda (raw-path)
+           ;; Treat links to `file.org' as links to `file.xml'.
+           (if (string= ".org" (downcase (file-name-extension raw-path ".")))
+               (concat (file-name-sans-extension raw-path) ".xml")
+             raw-path)))
+        (type (org-element-property :type link)))
     (cond
      ;; Link type is handled by a special function.
      ((and (fboundp 'org-export-custom-protocol-maybe) (org-export-custom-protocol-maybe link contents 'rfc)))
      ((member type '("custom-id" "id" "fuzzy"))
       (let ((destination (if (string= type "fuzzy")
-			     (org-export-resolve-fuzzy-link link info)
-			   (org-export-resolve-id-link link info))))
-	(pcase (org-element-type destination)
-	  (`headline
-	   (let* ((dtitle (org-export-data (org-element-property :title destination) info))
+                             (org-export-resolve-fuzzy-link link info)
+                           (org-export-resolve-id-link link info)))
+            (lpath (org-element-property :path link)))
+        ;; (message "XXX pcase: %10s link-type %10s dest-title %s dest-name %s dest-CUSTOM_ID %s link-CUSTOM_ID %s link-path %s"
+        ;;          (org-element-type destination)
+        ;;          type
+        ;;          (org-element-property :title destination)
+        ;;          (org-element-property :name destination)
+        ;;          (org-element-property :CUSTOM_ID destination)
+        ;;          (org-element-property :CUSTOM_ID link)
+        ;;          (org-element-property :path link)
+        ;;          )
+        (pcase (org-element-type destination)
+          (`headline
+           (let* (
+                  (dtitle (org-export-data (org-element-property :title destination) info))
                   (dparent (org-export-get-parent-element destination))
                   (pname (org-element-property :raw-value dparent)))
              (cond
@@ -689,42 +709,43 @@ a communication channel."
               ((member pname '("Informative References" "Normative References"))
                ;; A reference to one of the reference sections
                (format "<xref target=\"%s\"/>" dtitle))
+              ((not (org-string-nw-p contents))
+               (format "<xref target=\"%s\"/>"
+                       (or (org-element-property :CUSTOM_ID destination)
+                           (ox-rfc--headline-to-anchor dtitle))))
               (t
-               ;; Need to normalize references to allow for non leading zeros
+               ;; - Need to normalize references to allow for non leading zeros.
+               ;; - Using counter as a work-around until "none" is available.
                (format
-                "<xref%s target=\"%s\">%s</xref>"
-                ;; using counter as a work-around until "none" is available.
-	        (if (org-string-nw-p contents) " format=\"counter\"" "")
-	        ;; Reference.
-	        (or (org-element-property :CUSTOM_ID destination)
+                "<xref format=\"counter\" target=\"%s\">%s</xref>"
+                (or (org-element-property :CUSTOM_ID destination)
                     (ox-rfc--headline-to-anchor dtitle))
-                    ;; (org-export-get-reference destination info))
-                ;; Description.
-	        (cond ((org-string-nw-p contents))
-		      (t "")))))))
-	  (_
-	   (let ((description
-		  (or (org-string-nw-p contents)
-		      (let ((number (org-export-get-ordinal destination info)))
-			(cond
-			 ((not number) nil)
-			 ((atom number) (number-to-string number))
-			 (t (mapconcat #'number-to-string number ".")))))))
-	     (when description
-	       (format "<xref target=\"%s\">%s</xref>"
-		       (org-export-get-reference destination info)
-                       contents)))))))
+                (org-string-nw-p contents))))))
+          (_
+           (if lpath
+               (format "<xref target=\"%s\"/>" lpath)
+             (let ((description
+                    (or (org-string-nw-p contents)
+                        (let ((number (org-export-get-ordinal destination info)))
+                          (cond
+                           ((not number) nil)
+                           ((atom number) (number-to-string number))
+                           (t (mapconcat #'number-to-string number ".")))))))
+               (when description
+                 (format "<xref target=\"%s\">%s</xref>"
+                         (org-export-get-reference destination info)
+                         contents))))))))
      ;; Need to test this case.
      (t (let* ((raw-path (org-element-property :path link))
-	       (path
-		(cond
-		 ((member type '("http" "https" "ftp" "mailto"))
-		  (concat type ":" raw-path))
-		 ((string= type "file")
-		  (org-export-file-uri (funcall link-org-files-as-rfc raw-path)))
-		 (t raw-path))))
-	  (if (not contents) (format "<eref target=\"%s\"/>" path)
-	    (format "<eref target=\"%s\">%s</eref>" path contents)))))))
+               (path
+                (cond
+                 ((member type '("http" "https" "ftp" "mailto"))
+                  (concat type ":" raw-path))
+                 ((string= type "file")
+                  (org-export-file-uri (funcall link-org-files-as-rfc raw-path)))
+                 (t raw-path))))
+          (if (not contents) (format "<eref target=\"%s\"/>" path)
+            (format "<eref target=\"%s\">%s</eref>" path contents)))))))
 
 ;;;; Node Property (XXX what's this used for?)
 
@@ -755,19 +776,19 @@ a communication channel."
   (let ((ltype (org-element-property :type plain-list)))
     (if (ox-rfc-render-v3)
         (let* ((type (pcase ltype
-	               (`ordered "ol")
-	               (`unordered "ul")
-	               (`descriptive "dl")
-	               (other (error "Unknown HTML list type: %s" other)))))
+                       (`ordered "ol")
+                       (`unordered "ul")
+                       (`descriptive "dl")
+                       (other (error "Unknown HTML list type: %s" other)))))
           (if (eq ltype `descriptive)
               ;; (format "<dl hanging=\"false\">\n%s</dl>" contents)
               (format "<dl>\n%s</dl>" contents)
             (format "<%s>\n%s</%s>" type contents type)))
       (let* ((style (pcase ltype
-	              (`ordered "numbers")
-	              (`unordered "symbols")
-	              (`descriptive "hanging")
-	              (other (error "Unknown HTML list type: %s" other)))))
+                      (`ordered "numbers")
+                      (`unordered "symbols")
+                      (`descriptive "hanging")
+                      (other (error "Unknown HTML list type: %s" other)))))
         (format "<t><list style=\"%s\">\n%s</list></t>" style contents)))))
 
 
@@ -891,28 +912,28 @@ holding export options."
   ;; footnotes with at least a blank line.
   ;; Table of contents.
   (progn
-  (let ((category (or (plist-get info :rfc-category) "std"))
-        (consensus (or (plist-get info :rfc-consensus) "yes"))
-        (docname (ox-rfc-export-output-file-name "" t))
-        (ipr (or (plist-get info :rfc-ipr) "trust200902"))
-        (obsoletes (plist-get info :rfc-obsoletes))
-        (stream (or (plist-get info :rfc-stream) "IETF"))
-        (title (org-export-data (plist-get info :title) info))
-        (short-title (or (plist-get info :rfc-short-title)
-                         (org-export-data (plist-get info :title) info)))
-        (updates (plist-get info :rfc-updates))
-        (with-toc (if (plist-get info :with-toc) "yes" "no"))
-        (toc-inc (if (plist-get info :with-toc) "true" "false"))
-        )
-    (concat
-     ;; Replace this with actual code.
-     ;; <?rfc toc=\"" with-toc "\" ?>
-     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+    (let ((category (or (plist-get info :rfc-category) "std"))
+          (consensus (or (plist-get info :rfc-consensus) "yes"))
+          (docname (ox-rfc-export-output-file-name "" t))
+          (ipr (or (plist-get info :rfc-ipr) "trust200902"))
+          (obsoletes (plist-get info :rfc-obsoletes))
+          (stream (or (plist-get info :rfc-stream) "IETF"))
+          (title (org-export-data (plist-get info :title) info))
+          (short-title (or (plist-get info :rfc-short-title)
+                           (org-export-data (plist-get info :title) info)))
+          (updates (plist-get info :rfc-updates))
+          (with-toc (if (plist-get info :with-toc) "yes" "no"))
+          (toc-inc (if (plist-get info :with-toc) "true" "false"))
+          )
+      (concat
+       ;; Replace this with actual code.
+       ;; <?rfc toc=\"" with-toc "\" ?>
+       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 
-     (if (not (ox-rfc-render-v3))
-         "<!DOCTYPE rfc SYSTEM \"rfc2629.dtd\" []>\n"
-       "")
-"<?xml-stylesheet type=\"text/xsl\" href=\"rfc2629.xslt\"?>
+       (if (not (ox-rfc-render-v3))
+           "<!DOCTYPE rfc SYSTEM \"rfc2629.dtd\" []>\n"
+         "")
+       "<?xml-stylesheet type=\"text/xsl\" href=\"rfc2629.xslt\"?>
 <?rfc toc=\"" with-toc "\"?>
 <?rfc compact=\"no\"?>
 <?rfc subcompact=\"no\"?>
@@ -923,27 +944,27 @@ holding export options."
 <rfc ipr=\"" ipr "\"
      category=\"" category "\"
      docName=\"" docname "\""
-     (if obsoletes (concat "    obsoletes=\"" obsoletes "\"\n"))
-     (if updates (concat "    updates=\"" updates "\"\n"))
-"     submissionType=\"" stream "\""
-     (if (ox-rfc-render-v3)
-         (concat
-          "\n    consensus=\"" consensus "\""
-          "    tocInclude=\"" toc-inc "\""
-          "    version=\"3\""))
-     ">
+       (if obsoletes (concat "    obsoletes=\"" obsoletes "\"\n"))
+       (if updates (concat "    updates=\"" updates "\"\n"))
+       "     submissionType=\"" stream "\""
+       (if (ox-rfc-render-v3)
+           (concat
+            "\n    consensus=\"" consensus "\""
+            "    tocInclude=\"" toc-inc "\""
+            "    version=\"3\""))
+       ">
   <front>
     <title abbrev=\"" short-title "\">" title "</title>\n"
-  (ox-rfc-author-list info)
-  "  <date/>"
-  (or (plist-get info :abstract) "")
-  "  </front>"
-  "  <middle>\n"
-  ;; Document contents.
-  contents
-  (unless (plist-get info :in-back)
-    "</middle><back>")
-  "  </back>
+       (ox-rfc-author-list info)
+       "  <date/>"
+       (or (plist-get info :abstract) "")
+       "  </front>"
+       "  <middle>\n"
+       ;; Document contents.
+       contents
+       (unless (plist-get info :in-back)
+         "</middle><back>")
+       "  </back>
 </rfc>"))))
 
 (defun ox-rfc-template (contents _info)
@@ -970,34 +991,37 @@ contextual information."
                      info))
    (t
     (let* ((caption (org-export-get-caption table))
-             ;; May want to support in future.
-             ;; (number (org-export-get-ordinal
-             ;;          table info nil #'org-html--has-caption-p))
-             ;; (alignspec
-             ;;  (if (bound-and-true-p org-html-format-table-no-css)
-             ;;      "align=\"%s\""
-             ;;    "class=\"org-%s\""))
-             )
+           (orgname (org-element-property :name table))
+           (anchorattr (if orgname (format " anchor=\"%s\"" orgname) ""))
+           ;; May want to support in future.
+           ;; (number (org-export-get-ordinal
+           ;;          table info nil #'org-html--has-caption-p))
+           ;; (alignspec
+           ;;  (if (bound-and-true-p org-html-format-table-no-css)
+           ;;      "align=\"%s\""
+           ;;    "class=\"org-%s\""))
+           )
       (if (ox-rfc-render-v3)
-          (format "<table>\n%s\n%s</table>"
-	          (if (not caption) ""
-		    (format "<name>%s</name>" (org-export-data caption info)))
-	          contents)
+          (format "<table%s>\n%s\n%s</table>"
+                  anchorattr
+                  (if (not caption) ""
+                    (format "<name>%s</name>" (org-export-data caption info)))
+                  contents)
         (format "<texttable%s>\n%s</texttable>"
-	        (if (not caption) ""
-		  (format " title=\"%s\"" (org-export-data caption info)))
-	        contents))
-        ))))
+                (if (not caption) ""
+                  (format " title=\"%s\"" (org-export-data caption info)))
+                contents))
+      ))))
 
 (defun ox-rfc-table-first-row-data-cells (table info)
   "Transcode the first row of TABLE.
 INFO is a plist used as a communication channel."
   (let ((table-row
-	 (org-element-map table 'table-row
-	   (lambda (row)
-	     (unless (eq (org-element-property :type row) 'rule) row))
-	   info 'first-match))
-	(special-column-p (org-export-table-has-special-column-p table)))
+         (org-element-map table 'table-row
+           (lambda (row)
+             (unless (eq (org-element-property :type row) 'rule) row))
+           info 'first-match))
+        (special-column-p (org-export-table-has-special-column-p table)))
     (if (not special-column-p) (org-element-contents table-row)
       (cdr (org-element-contents table-row)))))
 
@@ -1007,16 +1031,16 @@ INFO is a plist used as a communication channel."
   (when (eq (org-element-property :type table) 'table.el)
     (require 'table)
     (let ((outbuf (with-current-buffer
-		      (get-buffer-create "*org-export-table*")
-		    (erase-buffer) (current-buffer))))
+                      (get-buffer-create "*org-export-table*")
+                    (erase-buffer) (current-buffer))))
       (with-temp-buffer
-	(insert (org-element-property :value table))
-	(goto-char 1)
-	(re-search-forward "^[ \t]*|[^|]" nil t)
-	(table-generate-source 'html outbuf))
+        (insert (org-element-property :value table))
+        (goto-char 1)
+        (re-search-forward "^[ \t]*|[^|]" nil t)
+        (table-generate-source 'html outbuf))
       (with-current-buffer outbuf
-	(prog1 (org-trim (buffer-string))
-	  (kill-buffer))))))
+        (prog1 (org-trim (buffer-string))
+          (kill-buffer))))))
 
 (defun ox-rfc-table-row (table-row contents info)
   "Transcode a TABLE-ROW element from Org to RFC format.
@@ -1028,30 +1052,30 @@ contextual information."
         (org-ascii-table-row table-row contents info)
       (when (eq (org-element-property :type table-row) 'standard)
         (let* ((group (org-export-table-row-group table-row info))
-	       ;; (number (org-export-table-row-number table-row info))
-	       (start-group-p
-	        (org-export-table-row-starts-rowgroup-p table-row info))
-	       (end-group-p
-	        (org-export-table-row-ends-rowgroup-p table-row info))
-	       ;; (topp (and (equal start-group-p '(top))
-	       ;;            (equal end-group-p '(below top))))
-	       ;; (bottomp (and (equal start-group-p '(above))
-	       ;;    	   (equal end-group-p '(bottom above))))
+               ;; (number (org-export-table-row-number table-row info))
+               (start-group-p
+                (org-export-table-row-starts-rowgroup-p table-row info))
+               (end-group-p
+                (org-export-table-row-ends-rowgroup-p table-row info))
+               ;; (topp (and (equal start-group-p '(top))
+               ;;            (equal end-group-p '(below top))))
+               ;; (bottomp (and (equal start-group-p '(above))
+               ;;          (equal end-group-p '(bottom above))))
                (row-open-tag (if v3 "<tr>" ""))
                (row-close-tag (if v3 "</tr>" ""))
-	       (group-tags
-	        (cond
-	         ;; Row belongs to second or subsequent groups.
-	         ((not (= 1 group)) (if v3 '("<tbody>" . "\n</tbody>") '("" . "")))
-	         ;; Row is from first group.  Table has >=1 groups.
-	         ((org-export-table-has-header-p
-	           (org-export-get-parent-table table-row) info)
-	          (if v3 '("<thead>" . "\n</thead>") '("" . "")))
-	         ;; Row is from first and only group.
-	         (t (if v3 '("<tbody>" . "\n</tbody>") '("" . ""))))))
+               (group-tags
+                (cond
+                 ;; Row belongs to second or subsequent groups.
+                 ((not (= 1 group)) (if v3 '("<tbody>" . "\n</tbody>") '("" . "")))
+                 ;; Row is from first group.  Table has >=1 groups.
+                 ((org-export-table-has-header-p
+                   (org-export-get-parent-table table-row) info)
+                  (if v3 '("<thead>" . "\n</thead>") '("" . "")))
+                 ;; Row is from first and only group.
+                 (t (if v3 '("<tbody>" . "\n</tbody>") '("" . ""))))))
           (concat (and start-group-p (car group-tags))
-	          (concat row-open-tag contents row-close-tag)
-	          (and end-group-p (cdr group-tags))))))))
+                  (concat row-open-tag contents row-close-tag)
+                  (and end-group-p (cdr group-tags))))))))
 
 (defun ox-rfc-table-cell (table-cell contents info)
   "Transcode a TABLE-CELL element from Org to RFC format.
@@ -1061,31 +1085,31 @@ contextual information."
       (org-ascii-table-cell table-cell contents info)
     (let* ((v3 (ox-rfc-render-v3))
            (table-row (org-export-get-parent table-cell))
-	   (table (org-export-get-parent-table table-cell))
-	   (cell-attrs ""))
+           (table (org-export-get-parent-table table-cell))
+           (cell-attrs ""))
       (when (or (not contents) (string= "" (org-trim contents)))
         (setq contents "&#xa0;"))
       (cond
        ((and (org-export-table-has-header-p table info)
-	     (= 1 (org-export-table-row-group table-row info)))
+             (= 1 (org-export-table-row-group table-row info)))
         (if v3
             (let ((header-tags '("<th%s>" . "</th>")))
-	      (concat (format (car header-tags) cell-attrs)
-		      contents
-		      (cdr header-tags)))
+              (concat (format (car header-tags) cell-attrs)
+                      contents
+                      (cdr header-tags)))
           (let ((header-tags '("<ttcol%s>" . "</ttcol>")))
-	    (concat (format (car header-tags) cell-attrs)
-		    contents
-		    (cdr header-tags)))))
+            (concat (format (car header-tags) cell-attrs)
+                    contents
+                    (cdr header-tags)))))
        (t (if v3
               (let ((data-tags '("<td%s>" . "</td>")))
-	        (concat (format (car data-tags) cell-attrs)
-		        contents
-		        (cdr data-tags)))
+                (concat (format (car data-tags) cell-attrs)
+                        contents
+                        (cdr data-tags)))
             (let ((data-tags '("<c%s>" . "</c>")))
               (concat (format (car data-tags) cell-attrs)
-	              contents
-	              (cdr data-tags)))))))))
+                      contents
+                      (cdr data-tags)))))))))
 
 ;;;; Verbatim
 
@@ -1103,7 +1127,7 @@ channel."
 
 ;;;###autoload
 (defun ox-rfc-run-test-blocks (&optional fail-fast)
-  "Run all code-blocks with names that start with 'test-' return
+  "Run all code-blocks with names that start with =test-= return
 true only if all code-blocks succeeded. If FAIL-FAST is true then
 return nil immediately when a code-block fails.
 
@@ -1150,7 +1174,7 @@ non-nil."
   (interactive)
   (let ((setmode (lambda ()
                    (let ((mode (or (assoc-default "whatmode.xml" auto-mode-alist 'string-match)
-                                         'text-mode)))
+                                   'text-mode)))
                      (set-auto-mode-0 mode t))))
         (tidycmd (ox-rfc-get-tidy)))
     (if (not tidycmd)

@@ -78,10 +78,10 @@
   "Test basic XML generation"
   (test-generated "test-basic.org" t nil))
 
-;; (ert-deftest xml-basic-v2-01 nil
-;;   "Test basic XML generation"
-;;   (test-generated "test-basic.org" t t)
-;;   (test-generated "test-basic.org" nil t))
+;; ;; (ert-deftest xml-basic-v2-01 nil
+;; ;;   "Test basic XML generation"
+;; ;;   (test-generated "test-basic.org" t t)
+;; ;;   (test-generated "test-basic.org" nil t))
 
 (ert-deftest xml-lists-01 nil
   "Test lists XML generation"
@@ -93,27 +93,27 @@
   "Check that we produce the expected XML"
   (test-generated "test-lists.org" t))
 
-;; (ert-deftest xml-lists-v2-01 nil
-;;   "Test lists XML generation"
-;;   "Check that we produce the expected XML"
-;;   (test-generated "test-lists.org" nil t)
-;;   (test-generated "test-lists.org" t t))
+;; ;; (ert-deftest xml-lists-v2-01 nil
+;; ;;   "Test lists XML generation"
+;; ;;   "Check that we produce the expected XML"
+;; ;;   (test-generated "test-lists.org" nil t)
+;; ;;   (test-generated "test-lists.org" t t))
 
-;; (ert-deftest xml-refs-01 nil
-;;   "Test References XML generation"
-;;   "Check that we produce the expected XML"
-;;   (test-generated "test-refs.org" nil))
+(ert-deftest xml-refs-01 nil
+  "Test References XML generation"
+  "Check that we produce the expected XML"
+  (test-generated "test-refs.org" nil))
 
-;; (ert-deftest xml-refs-tidy-01 nil
-;;   "Test References XML generation"
-;;   "Check that we produce the expected XML"
-;;   (test-generated "test-refs.org" t))
+;; ;; (ert-deftest xml-refs-tidy-01 nil
+;; ;;   "Test References XML generation"
+;; ;;   "Check that we produce the expected XML"
+;; ;;   (test-generated "test-refs.org" t))
 
-;; (ert-deftest xml-lists-v2-01 nil
-;;   "Test lists XML generation"
-;;   "Check that we produce the expected XML"
-;;   (test-generated "test-lists.org" nil t)
-;;   (test-generated "test-lists.org" t t))
+;; ;; (ert-deftest xml-lists-v2-01 nil
+;; ;;   "Test lists XML generation"
+;; ;;   "Check that we produce the expected XML"
+;; ;;   (test-generated "test-lists.org" nil t)
+;; ;;   (test-generated "test-lists.org" t t))
 
 (ert-deftest xml-table-01 nil
   "Test Table XML generation"
@@ -125,11 +125,11 @@
   "Check that we produce the expected XML"
   (test-generated "test-table.org" t))
 
-;; (ert-deftest xml-table-v2-01 nil
-;;   "Test lists XML generation"
-;;   "Check that we produce the expected XML"
-;;   (test-generated "test-table.org" nil t)
-;;   (test-generated "test-table.org" t t))
+;; ;; (ert-deftest xml-table-v2-01 nil
+;; ;;   "Test lists XML generation"
+;; ;;   "Check that we produce the expected XML"
+;; ;;   (test-generated "test-table.org" nil t)
+;; ;;   (test-generated "test-table.org" t t))
 
 (ert-deftest xml-yang-01 nil
   "Test YANG XML generation"
@@ -139,10 +139,10 @@
     (setq org-babel-load-languages '((shell . t) (yang . t)))
     (test-generated "test-yang.org" nil)))
 
-;; (ert-deftest xml-yang-v2-01 nil
-;;   "Test lists XML generation"
-;;   "Check that we produce the expected XML"
-;;   (let ((org-confirm-babel-evaluate nil)
-;;         (org-export-use-babel t))
-;;     (setq org-babel-load-languages '((bash . t) (shell . t) (yang . t)))
-;;     (test-generated "test-yang.org" nil t)))
+;; ;; (ert-deftest xml-yang-v2-01 nil
+;; ;;   "Test lists XML generation"
+;; ;;   "Check that we produce the expected XML"
+;; ;;   (let ((org-confirm-babel-evaluate nil)
+;; ;;         (org-export-use-babel t))
+;; ;;     (setq org-babel-load-languages '((bash . t) (shell . t) (yang . t)))
+;; ;;     (test-generated "test-yang.org" nil t)))

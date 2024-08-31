@@ -3,7 +3,7 @@
 TESTDIR := $(shell pwd)
 PROJDIR ?= $(TESTDIR)/..
 
-ORG_RELEASE ?= 9.5.2
+ORG_RELEASE ?= 9.6.15
 ORG_DIR := /tmp/org-$(ORG_RELEASE)
 # ORG_URL := https://code.orgmode.org/bzg/org-mode/archive/release_$(ORG_RELEASE).tar.gz
 ORG_URL := https://git.savannah.gnu.org/cgit/emacs/org-mode.git/snapshot/org-mode-release_$(ORG_RELEASE).tar.gz
@@ -50,6 +50,9 @@ test-travis:
 test: build test-autoloads
 	$(EMACS) $(EMACS_BATCH) -L .. -l ert -l unit-test.el -f ert-run-tests-batch-and-exit
 	$(EMACS) $(EMACS_BATCH) -L .. -l ert -l ox-rfc-test.el -f ert-run-tests-batch-and-exit
+
+debug: build test-autoloads
+	$(EMACS) $(EMACS_BATCH) -L .. -l ert -l ox-rfc-debug.el -f ert-run-tests-batch-and-exit
 
 clean:
 	@rm -rf $(ORG_DIR)

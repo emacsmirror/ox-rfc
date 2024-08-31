@@ -21,6 +21,9 @@ ox-rfc.org: README.org
 test:
 	$(MAKE) -C ert-tests test
 
+debug:
+	$(MAKE) -C ert-tests debug
+
 clean:
 	$(MAKE) -C ert-tests clean
 	rm -f *~ *.elc *.info *.texi

@@ -47,7 +47,7 @@ Here's a subsection of the [[First Section]].
 
 ** Subsection of First Section
 
-Here's a subsection of the [[First Section]] with embedded XML.
+Here's a subsection of the [[First Section]] with following text.
 
 * Second Section
 

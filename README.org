@@ -110,6 +110,7 @@ Two of three variables always need to be set. They are listed below. One of
   ,#+RFC_IPR: trust200902
   ,#+RFC_NAME:
   ,#+RFC_OBSOLETES:
+  ,#+RFC_SHORT_ORG:
   ,#+RFC_STREAM: IETF
   ,#+RFC_UPDATES:
   ,#+RFC_VERSION: 00
@@ -121,12 +122,17 @@ Two of three variables always need to be set. They are listed below. One of
 - RFC_ADD_AUTHOR :: For multiple author documents. This option can be given
                     multiple times. The format uses a lisp list syntax: ~("John
                     Smith" "jsmith@example.com" "Example Company")~
+                    Additionally, the organization can be given as a 2 tuple
+                    of strings with the first element being the org abbreviation
+                    and the second being the full org name:
+                    ~("John Smith" "js@example.com" ("Exco" "Example Company"))~
 - RFC_CATEGORY :: the ~category <rfc>~ attribute (default "std").
 - RFC_CONSENSUS :: the ~consensus <rfc>~ attribute (default "true").
 - RFC_IPR :: the ~ipr <rfc>~ attribute (default "trust200902").
 - RFC_NAME :: The base name of the internet draft, if not specified the Org file
               name is used.
 - RFC_OBSOLETES :: Comma separated list of RFC numbers this document obsoletes.
+- RFC_SHORT_ORG :: The abbreviated name for the authors affiliation (org).
 - RFC_SHORT_TITLE :: The abbreviated title for page footers, defaults to title.
 - RFC_STREAM :: The ~submissionType <rfc>~ attribute (default "IETF").
 - RFC_UPDATES :: Comma separated list of RFC numbers this document updates.
