@@ -25,13 +25,22 @@ First a list of references in [[Normative References]].
 
 - [[RFC2119]]
 
-Next a list of references in [[Informative References]].
+
+** Subsection of Introduction
+   :PROPERTIES:
+   :CUSTOM_ID: subsect
+   :END:
+
+Next a list of references in [[*Informative References]].
 
 - [[ISO10589]]
 - [[StudyScarlet]]
 - [[I-D.iab-styleguide]]
 - [[RenamedRef5308]]
 - See this section [[Introduction]].
+
+* Amazing Technology
+Here we describe some amazing technology. We also refer to [[#subsect][a Subsection]].
 
 * Normative References
 ** RFC2119

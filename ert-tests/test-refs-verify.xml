@@ -18,22 +18,30 @@
 <section title="Introduction" anchor="sec-introduction">
 <t>Here we use each type of reference.</t>
 
-<t>First a list of references in <xref target="sec-normative-references"></xref>.</t>
+<t>First a list of references in <xref target="sec-normative-references"/>.</t>
 
 <ul>
 <li><t><xref target="RFC2119"/></t></li>
 </ul>
 
-<t>Next a list of references in <xref target="sec-informative-references"></xref>.</t>
 
+<section title="Subsection of Introduction" anchor="subsect">
+
+<t>Next a list of references in <xref target="sec-informative-references"/>.</t>
 <ul>
 <li><t><xref target="ISO10589"/></t></li>
 <li><t><xref target="StudyScarlet"/></t></li>
 <li><t><xref target="I-D.iab-styleguide"/></t></li>
 <li><t><xref target="RenamedRef5308"/></t></li>
-<li><t>See this section <xref target="sec-introduction"></xref>.</t></li>
+<li><t>See this section <xref target="sec-introduction"/>.</t></li>
 </ul>
 
+</section>
+
+</section>
+
+<section title="Amazing Technology">
+<t>Here we describe some amazing technology. We also refer to <xref format="counter" target="subsect">a Subsection</xref>.</t>
 </section>
 
 </middle>
@@ -41,16 +49,16 @@
 <references anchor="sec-normative-references" title="Normative References">
 
 
-<reference  anchor='RFC2119' target='https://www.rfc-editor.org/info/rfc2119'>
+<reference  anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119">
 <front>
 <title>Key words for use in RFCs to Indicate Requirement Levels</title>
-<author initials='S.' surname='Bradner' fullname='S. Bradner'><organization /></author>
-<date year='1997' month='March' />
+<author fullname="S. Bradner" initials="S." surname="Bradner" />
+<date month="March" year="1997" />
 <abstract><t>In many standards track documents several words are used to signify the requirements in the specification.  These words are often capitalized. This document defines these words as they should be interpreted in IETF documents.  This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t></abstract>
 </front>
-<seriesInfo name='BCP' value='14'/>
-<seriesInfo name='RFC' value='2119'/>
-<seriesInfo name='DOI' value='10.17487/RFC2119'/>
+<seriesInfo name="BCP" value="14"/>
+<seriesInfo name="RFC" value="2119"/>
+<seriesInfo name="DOI" value="10.17487/RFC2119"/>
 </reference>
 </references>
 <references anchor="sec-informative-references" title="Informative References">
@@ -62,7 +70,7 @@
 <author>
 <organization>International Organization for Standardization</organization>
 </author>
-<date month="" year="1992" />
+<date year="1992" />
 </front>
 
 <seriesInfo name="ISO" value="Standard 10589" />
@@ -89,23 +97,24 @@
            </author>
            <date day="9" month="April" year="2014" />
 
-<abstract><t>This document describes the fundamental and unique style conventions and editorial policies currently in use for the RFC Series.  It captures the RFC Editor's basic requirements and offers guidance regarding the style and structure of an RFC.  Additional guidance is captured on a website that reflects the experimental nature of that guidance and prepares it for future inclusion in the RFC Style guide.  Guidance provided by this document will not be applied until published as an RFC.  Please send your comments about the contents of this document to &lt;rfc-interest@rfc-editor.org>.</t></abstract>
-
+    <abstract>
+      <t>This document describes the fundamental and unique style conventions and editorial policies currently in use for the RFC Series. It captures the RFC Editor's basic requirements and offers guidance regarding the style and structure of an RFC. Additional guidance is captured on a website that reflects the experimental nature of that guidance and prepares it for future inclusion in the RFC Style Guide. This document obsoletes RFC 2223, "Instructions to RFC Authors".</t>
+    </abstract>
 </front>
 
-<seriesInfo name='Internet-Draft' value='draft-iab-styleguide-02' />
+<seriesInfo name="Internet-Draft" value="draft-iab-styleguide-02"/>
 </reference>
-
-
-<reference  anchor="RenamedRef5308" target='https://www.rfc-editor.org/info/rfc5308'>
-<front>
-<title>Routing IPv6 with IS-IS</title>
-<author initials='C.' surname='Hopps' fullname='C. Hopps'><organization /></author>
-<date year='2008' month='October' />
-<abstract><t>This document specifies a method for exchanging IPv6 routing information using the IS-IS routing protocol.  The described method utilizes two new TLVs: a reachability TLV and an interface address TLV to distribute the necessary IPv6 information throughout a routing domain.  Using this method, one can route IPv6 along with IPv4 and OSI using a single intra-domain routing protocol.  [STANDARDS-TRACK]</t></abstract>
-</front>
-<seriesInfo name='RFC' value='5308'/>
-<seriesInfo name='DOI' value='10.17487/RFC5308'/>
+<reference anchor="RenamedRef5308" target="https://www.rfc-editor.org/info/rfc5308">
+  <front>
+    <title>Routing IPv6 with IS-IS</title>
+    <author fullname="C. Hopps" initials="C." surname="Hopps"/>
+    <date month="October" year="2008"/>
+    <abstract>
+      <t>This document specifies a method for exchanging IPv6 routing information using the IS-IS routing protocol. The described method utilizes two new TLVs: a reachability TLV and an interface address TLV to distribute the necessary IPv6 information throughout a routing domain. Using this method, one can route IPv6 along with IPv4 and OSI using a single intra-domain routing protocol. [STANDARDS-TRACK]</t>
+    </abstract>
+  </front>
+  <seriesInfo name="RFC" value="5308"/>
+  <seriesInfo name="DOI" value="10.17487/RFC5308"/>
 </reference>
 </references>
   </back>
