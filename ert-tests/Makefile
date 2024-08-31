@@ -51,6 +51,9 @@ test: build test-autoloads
 	$(EMACS) $(EMACS_BATCH) -L .. -l ert -l unit-test.el -f ert-run-tests-batch-and-exit
 	$(EMACS) $(EMACS_BATCH) -L .. -l ert -l ox-rfc-test.el -f ert-run-tests-batch-and-exit
 
+debug: build test-autoloads
+	$(EMACS) $(EMACS_BATCH) -L .. -l ert -l ox-rfc-debug.el -f ert-run-tests-batch-and-exit
+
 clean:
 	@rm -rf $(ORG_DIR)
 	@rm -f auto $(AUTOLOADS_FILE) *.elc $(TESTDIR)/draft-*.xml
