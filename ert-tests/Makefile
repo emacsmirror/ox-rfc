@@ -3,7 +3,7 @@
 TESTDIR := $(shell pwd)
 PROJDIR ?= $(TESTDIR)/..
 
-ORG_RELEASE ?= 9.6.15
+ORG_RELEASE ?= 9.6.30
 ORG_DIR := /tmp/org-$(ORG_RELEASE)
 # ORG_URL := https://code.orgmode.org/bzg/org-mode/archive/release_$(ORG_RELEASE).tar.gz
 ORG_URL := https://git.savannah.gnu.org/cgit/emacs/org-mode.git/snapshot/org-mode-release_$(ORG_RELEASE).tar.gz
@@ -13,7 +13,8 @@ EMACS ?= emacs
 EMACS_CLEAN ?= -Q
 # So bizarre emacs 25 (only) has no exec-path maybe b/c of cannot dump.
 EMACS_BATCH := $(EMACS_CLEAN) --batch --eval "(add-to-list 'exec-path \"/usr/bin\")" -L $(ORG_DIR)/lisp
-EMACS_TEST_VERSIONS := 25.3 26.1 27.2
+EMACS_TEST_VERSION_LATEST := 29.4
+EMACS_TEST_VERSIONS := $(EMACS_TEST_VERSION_LATEST) 28.2 27.2
 
 AUTOLOADS_FILE := $(TESTDIR)/$(PACKAGE_NAME)-autoloads.el
 CURL := curl -fL --silent
@@ -60,10 +61,8 @@ clean:
 
 # docker build --build-arg=UVERSION=16.04 --build-arg=EVERSION=24.3 -t org-rfc-test:24.3 .
 docker-build:
-	docker build --build-arg=UVERSION=20.04 --build-arg=EVERSION=25.3 -t org-rfc-test:25.3 .
-	docker build --build-arg=UVERSION=20.04 --build-arg=EVERSION=26.1 -t org-rfc-test:26.1 .
-	docker build --build-arg=UVERSION=20.04 --build-arg=EVERSION=27.2 -t org-rfc-test:27.2 .
-	docker tag org-rfc-test:27.2 org-rfc-test
+	for f in $(EMACS_TEST_VERSIONS); do docker docker build --build-arg=UVERSION=22.04 --build-arg=EVERSION=$${f} -t org-rfc-test:$${f} .; done
+	docker tag org-rfc-test:$(EMACS_TEST_VERSION_LATEST) org-rfc-test
 
 docker-push:
 	for f in $(EMACS_TEST_VERSIONS); do docker tag org-rfc-test:$$f choppsv1/org-rfc-test:$$f; done
@@ -72,7 +71,7 @@ docker-push:
 docker-run:
 	docker run -v $(PROJDIR):/work -it org-rfc-test
 
-EVERSION ?= 25.3
+EVERSION ?= $(EMACS_TEST_VERSION_LATEST)
 DOCKER := docker run -v $(PROJDIR):/work -it org-rfc-test:$(EVERSION)
 docker-test:
 	$(DOCKER) bash -c "cp -pr /work /work-test; cd /work-test && make test"
