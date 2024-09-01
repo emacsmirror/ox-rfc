@@ -7,8 +7,9 @@
 #+AFFILIATION: LabN Consulting, L.L.C.
 
 #+RFC_NAME: draft-test-basic
-#+RFC_AREA: routing
-#+RFC_WORKGROUP: lsr
+#+RFC_AREA: RTG
+#+RFC_WORKGROUP: LSR
+#+RFC_KEYWORDS: ("Foo" "Bar")
 #+RFC_VERSION: 00
 #+RFC_ADD_AUTHOR: ("Author Two" "atwo@example.com" "Ex. Company")
 #+RFC_XML_VERSION: 3
