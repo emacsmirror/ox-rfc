@@ -57,4 +57,4 @@
   (let ((org-confirm-babel-evaluate nil)
         (org-export-use-babel t))
     (setq org-babel-load-languages '((shell . t) (yang . t)))
-    (test-debug "test-yang.org" nil)))
+    (test-debug "test-table.org" nil)))

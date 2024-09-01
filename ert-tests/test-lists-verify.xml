@@ -1,52 +1,94 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="rfc2629.xslt"?>
-<?rfc toc="yes"?>
-<?rfc compact="no"?>
-<?rfc subcompact="no"?>
-<?rfc symrefs="yes" ?>
-<?rfc sortrefs="yes"?>
-<?rfc iprnotified="no"?>
-<?rfc strict="yes"?>
-<rfc ipr="trust200902"
-     category="std"
-     docName="draft-test-lists-00"     submissionType="IETF"
-    consensus="true"    tocInclude="true"    version="3">
+<rfc category="std"
+     consensus="true"
+     docName="draft-test-lists-00"
+     ipr="trust200902"
+     sortRefs="true"
+     submissionType="IETF"
+     symRefs="true"
+     tocDepth="3"
+     tocInclude="true"
+     version="3">
   <front>
     <title abbrev="Test Lists RFC">Test Lists RFC</title>
-<author initials='A.' surname='One' fullname='Author One'><address><email>aone@example.com</email></address></author>  <date/>  </front>  <middle>
+    <author initials='A.' surname='One' fullname='Author One'><address><email>aone@example.com</email></address></author>  <date/>  </front>  <middle>
 
-<section title="Test Lists">
-<section title="Bullet Lists">
-<ul>
-<li><t>List item 1</t>
-<ul>
-<li><t>Item 1 sub-list item 1</t></li>
-<li><t>Item 1 sub-list item 2</t></li>
-</ul></li>
-<li><t>List item 2</t>
-<ul>
-<li><t>Item 2 sub-list item 1</t></li>
-</ul></li>
-</ul>
+    <section title="Test Lists">
+      <section title="Bullet Lists">
+        <ul>
+          <li><t>List item 1</t>
+          <ul>
+            <li><t>Item 1 sub-list item 1</t></li>
+            <li><t>Item 1 sub-list item 2</t></li>
+          </ul></li>
+          <li><t>List item 2</t>
+          <ul>
+            <li><t>Item 2 sub-list item 1</t></li>
+          </ul></li>
+        </ul>
 
-</section>
+      </section>
 
-<section title="Definition Lists">
-<dl>
-<dt>Term1</dt> <dd><t>Definition of term 1.</t>
-<ul>
-<li><t>List item 1 of Term1</t></li>
-<li><t>List item 2 of Term1</t></li>
-</ul></dd>
-<dt>Term2</dt> <dd><t>Definition of term 2.</t></dd>
+      <section title="Definition Lists">
+        <dl>
+          <dt>Term1</dt> <dd><t>Definition of term 1.</t>
+          <ul>
+            <li><t>List item 1 of Term1</t></li>
+            <li><t>List item 2 of Term1</t></li>
+          </ul></dd>
+          <dt>Term2</dt> <dd><t>Definition of term 2.</t></dd>
 
-<li><t>List item A.</t></li>
-<li><t>List item B.</t></li>
-</dl>
-<t>Some text.</t>
+          <li><t>List item A.</t></li>
+          <li><t>List item B.</t></li>
+        </dl>
+        <t>Some text.</t>
 
-</section>
+      </section>
 
-</section>
-</middle><back>  </back>
+      <section title="Attributed Lists">
+        <dl hanging="true">
+          <dt>Term1</dt>
+          <dd>
+            <t>Definition of term 1.</t>
+            <ul>
+              <li>
+                <t>List item 1 of Term1</t>
+              </li>
+              <li>
+                <t>List item 2 of Term1</t>
+              </li>
+            </ul>
+          </dd>
+          <dt>Term2</dt>
+          <dd>
+            <t>Definition of term 2.</t>
+          </dd>
+        </dl>
+
+        <ul spacing="compact">
+          <li>
+            <t>List item 1</t>
+            <ul>
+              <li>
+                <t>Item 1 sub-list item 1</t>
+              </li>
+              <li>
+                <t>Item 1 sub-list item 2</t>
+              </li>
+            </ul>
+          </li>
+          <li>
+            <t>List item 2</t>
+            <ul>
+              <li>
+                <t>Item 2 sub-list item 1</t>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </section>
+
+    </section>
+    </middle><back>  </back>
 </rfc>

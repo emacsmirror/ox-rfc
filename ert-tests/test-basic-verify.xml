@@ -1,21 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="rfc2629.xslt"?>
-<?rfc toc="yes"?>
-<?rfc compact="no"?>
-<?rfc subcompact="no"?>
-<?rfc symrefs="yes" ?>
-<?rfc sortrefs="yes"?>
-<?rfc iprnotified="no"?>
-<?rfc strict="yes"?>
-<rfc ipr="trust200902"
-     category="std"
-     docName="draft-test-basic-00"     submissionType="IETF"
-    consensus="true"    tocInclude="true"    version="3">
+<rfc category="std"
+     consensus="true"
+     docName="draft-test-basic-00"
+     ipr="trust200902"
+     sortRefs="true"
+     submissionType="IETF"
+     symRefs="true"
+     tocDepth="3"
+     tocInclude="true"
+     version="3">
   <front>
     <title abbrev="Test Basic RFC">Test Basic RFC</title>
-<author initials='C.E.' surname='Hopps' fullname='Christian E. Hopps'><organization>LabN Consulting, L.L.C.</organization><address><email>chopps@labn.net</email></address></author>
-<author initials='A.' surname='Two' fullname='Author Two'><organization>Ex. Company</organization><address><email>atwo@example.com</email></address></author>  <date/><abstract><t>This is the example RFC abstract.</t></abstract>  </front>  <middle>
-
+    <author initials='C.E.' surname='Hopps' fullname='Christian E. Hopps'>
+      <organization>LabN Consulting, L.L.C.</organization>
+      <address><email>chopps@labn.net</email></address>
+    </author>
+    <author initials='A.' surname='Two' fullname='Author Two'>
+      <organization>Ex. Company</organization>
+      <address><email>atwo@example.com</email></address>
+    </author>
+    <date/>
+    <area>RTG</area>
+    <workgroup>LSR</workgroup>
+    <keyword>Foo</keyword>
+    <keyword>Bar</keyword>
+    <abstract><t>This is the example RFC abstract.</t></abstract>
+  </front>
+  <middle>
 <section title="Introduction">
 <t>This is an example introduction section. You might refer to <xref target="RFC7322"/> which was
 adopted from <xref target="I-D.iab-styleguide"/> to document RFC style.</t>
