@@ -186,8 +186,10 @@
     (:email "EMAIL" nil nil t)
     (:rfc-file-name-version nil "fnv" ox-rfc-file-name-version t)
     (:rfc-add-author "RFC_ADD_AUTHOR" nil nil newline)
+    (:rfc-area "RFC_AREA" nil nil t)
     (:rfc-ascii-table "RFC_ASCII_TABLE" nil nil t)
     (:rfc-category "RFC_CATEGORY" nil "std" t)
+    (:rfc-compact "RFC_COMPACT" nil nil t)
     (:rfc-consensus "RFC_CONSENSUS" nil "true" t)
     (:rfc-ipr "RFC_IPR" nil "trust200902" t)
     (:rfc-name "RFC_NAME" nil nil t)
@@ -195,8 +197,11 @@
     (:rfc-short-org "RFC_SHORT_ORG" nil nil t)
     (:rfc-short-title "RFC_SHORT_TITLE" nil nil t)
     (:rfc-stream "RFC_STREAM" nil "IETF" t)
+    (:rfc-toc-depth "RFC_TOC_DEPTH" nil "3" t)
     (:rfc-updates "RFC_UPDATES" nil nil space)
     (:rfc-version "RFC_VERSION" nil "00" t)
+    (:rfc-workgroup "RFC_WORKGROUP" nil nil t)
+    (:rfc-keywords "RFC_KEYWORDS" nil nil t)
     (:rfc-xml-version "RFC_XML_VERSION" nil nil t)
     ;; We define these to allow us to use org-ascii-table
     ;; for XML version 2 multi-header-row 2 formatting.
@@ -408,7 +413,7 @@ If INCVER is t then override the options export environment setting."
                            (email (plist-get info :email)))
                        (if email (setq author (append author (list email))))
                        (if (and affiliation short-org)
-                           (setq affiliation (list (read short-org) (read affiliation))))
+                           (setq affiliation (list short-org affiliation)))
                        (if affiliation (setq author (append author (list affiliation))))
                        (list author))
                    '()))
@@ -485,7 +490,7 @@ channel."
          (v3 (ox-rfc-render-v3))
          (v2 (not v3))
          (orgname (org-element-property :name a-block))
-         (anchorattr (if orgname (format " anchor=\"%s\"" orgname) (ox-rfc--headline-to-anchor capstr)))
+         (anchorattr (if orgname (format " anchor=\"%s\"" orgname) ""))
          (titleattr (if (and v2 caption) (format " title=\"%s\"" capstr) ""))
          (nameattr (if (and v3 caption) (format "<name>%s</name>\n" capstr) ""))
          (figopen (if (or v2 caption) (format "<figure%s%s>\n%s" titleattr anchorattr nameattr) ""))
@@ -553,7 +558,7 @@ holding contextual information."
   (let ((block-type (org-element-property :type special-block)))
     (cond
      ((string= (downcase block-type) "abstract")
-      (plist-put info :abstract (format "<abstract>%s</abstract>" (org-trim contents)))
+      (plist-put info :abstract (format "<abstract>%s</abstract>\n" (org-trim contents)))
       "")
      ((string= (downcase block-type) "noexport") "")
      ((string= (downcase block-type) "xml")
@@ -722,6 +727,16 @@ a communication channel."
                     (ox-rfc--headline-to-anchor dtitle))
                 (org-string-nw-p contents))))))
           (_
+           ;; (message "XXX pcase: %10s link-type %10s dest-title %s dest-name %s dest-CUSTOM_ID %s link-CUSTOM_ID %s link-path %s contents %s"
+           ;;          (org-element-type destination)
+           ;;          type
+           ;;          (org-element-property :title destination)
+           ;;          (org-element-property :name destination)
+           ;;          (org-element-property :CUSTOM_ID destination)
+           ;;          (org-element-property :CUSTOM_ID link)
+           ;;          (org-element-property :path link)
+           ;;          (org-string-nw-p contents)
+           ;;          )
            (if lpath
                (format "<xref target=\"%s\"/>" lpath)
              (let ((description
@@ -760,11 +775,20 @@ information."
 
 ;;;; Paragraph
 
-(defun ox-rfc-paragraph (_paragraph contents _info)
+(defun ox-rfc-paragraph (paragraph contents _info)
   "Transcode PARAGRAPH element into RFC format.
 CONTENTS is the paragraph contents.  INFO is a plist used as
 a communication channel."
-  (format "<t>%s</t>" (org-trim contents)))
+  ;; (message "XXX paragraph %s" (listp paragraph))
+  (let ((target (catch 'found
+                  (dolist (item paragraph)
+                    ;; (message "XXX walking contents")
+                    (when (eq (org-element-type item) 'target)
+                      ;; (message "XXX found target %s" item)
+                      (throw 'found item))))))
+    (if target
+        (format "<t anchor=\"%s\">%s</t>" (org-element-property :value target) (org-trim contents))
+      (format "<t>%s</t>" (org-trim contents)))))
 
 
 ;;;; Plain List
@@ -773,7 +797,12 @@ a communication channel."
   "Transcode PLAIN-LIST element into RFC format.
 CONTENTS is the plain-list contents.  INFO is a plist used as
 a communication channel."
-  (let ((ltype (org-element-property :type plain-list)))
+  (let* ((ltype (org-element-property :type plain-list))
+         (attrs (org-export-read-attribute :attr_rfc plain-list))
+         (compact (plist-get attrs :compact))
+         (spaceattr (if compact " spacing=\"compact\"" ""))
+         (hanging (plist-get attrs :hanging))
+         (hangattr (if hanging " hanging=\"true\"" "")))
     (if (ox-rfc-render-v3)
         (let* ((type (pcase ltype
                        (`ordered "ol")
@@ -782,14 +811,14 @@ a communication channel."
                        (other (error "Unknown HTML list type: %s" other)))))
           (if (eq ltype `descriptive)
               ;; (format "<dl hanging=\"false\">\n%s</dl>" contents)
-              (format "<dl>\n%s</dl>" contents)
-            (format "<%s>\n%s</%s>" type contents type)))
+              (format "<dl%s>\n%s</dl>" hangattr contents)
+            (format "<%s%s>\n%s</%s>" type spaceattr contents type)))
       (let* ((style (pcase ltype
                       (`ordered "numbers")
                       (`unordered "symbols")
                       (`descriptive "hanging")
                       (other (error "Unknown HTML list type: %s" other)))))
-        (format "<t><list style=\"%s\">\n%s</list></t>" style contents)))))
+        (format "<t><list style=\"%s\"%s>\n%s</list></t>" style spaceattr contents)))))
 
 
 ;;;; Plain Text
@@ -901,7 +930,6 @@ contextual information."
       (format "<sup>%s</sup>" contents)
     contents))
 
-
 ;;;; Template
 
 (defun ox-rfc-inner-template (contents info)
@@ -913,7 +941,7 @@ holding export options."
   ;; Table of contents.
   (progn
     (let ((category (or (plist-get info :rfc-category) "std"))
-          (consensus (or (plist-get info :rfc-consensus) "yes"))
+          (consensus (or (plist-get info :rfc-consensus) "true"))
           (docname (ox-rfc-export-output-file-name "" t))
           (ipr (or (plist-get info :rfc-ipr) "trust200902"))
           (obsoletes (plist-get info :rfc-obsoletes))
@@ -923,6 +951,10 @@ holding export options."
                            (org-export-data (plist-get info :title) info)))
           (updates (plist-get info :rfc-updates))
           (with-toc (if (plist-get info :with-toc) "yes" "no"))
+          (keywords (read (or (plist-get info :rfc-keywords) "()")))
+          (area (plist-get info :rfc-area))
+          (workgroup (plist-get info :rfc-workgroup))
+          (toc-depth (plist-get info :rfc-toc-depth))
           (toc-inc (if (plist-get info :with-toc) "true" "false"))
           )
       (concat
@@ -933,32 +965,38 @@ holding export options."
        (if (not (ox-rfc-render-v3))
            "<!DOCTYPE rfc SYSTEM \"rfc2629.dtd\" []>\n"
          "")
-       "<?xml-stylesheet type=\"text/xsl\" href=\"rfc2629.xslt\"?>
-<?rfc toc=\"" with-toc "\"?>
+       "<?xml-stylesheet type=\"text/xsl\" href=\"rfc2629.xslt\"?>\n"
+
+       (if (not (ox-rfc-render-v3))
+           "<?rfc toc=\"" with-toc "\"?>
 <?rfc compact=\"no\"?>
 <?rfc subcompact=\"no\"?>
 <?rfc symrefs=\"yes\" ?>
 <?rfc sortrefs=\"yes\"?>
 <?rfc iprnotified=\"no\"?>
-<?rfc strict=\"yes\"?>
-<rfc ipr=\"" ipr "\"
-     category=\"" category "\"
-     docName=\"" docname "\""
+<?rfc strict=\"yes\"?>" "")
+       "<rfc category=\"" category "\"\n"
+       (if (ox-rfc-render-v3) (concat "    consensus=\"" consensus "\"\n"))
+       "     docName=\"" docname "\"\n"
+       "     ipr=\"" ipr "\"\n"
        (if obsoletes (concat "    obsoletes=\"" obsoletes "\"\n"))
+       (if (ox-rfc-render-v3) "    sortRefs=\"true\"\n")
+       "    submissionType=\"" stream "\"\n"
+       (if (ox-rfc-render-v3) "    symRefs=\"true\"\n")
+       (if (ox-rfc-render-v3) (concat "    tocDepth=\"" toc-depth "\"\n"))
+       (if (ox-rfc-render-v3) (concat "    tocInclude=\"" toc-inc "\"\n"))
        (if updates (concat "    updates=\"" updates "\"\n"))
-       "     submissionType=\"" stream "\""
-       (if (ox-rfc-render-v3)
-           (concat
-            "\n    consensus=\"" consensus "\""
-            "    tocInclude=\"" toc-inc "\""
-            "    version=\"3\""))
+       (if (ox-rfc-render-v3) "    version=\"3\"")
        ">
   <front>
     <title abbrev=\"" short-title "\">" title "</title>\n"
        (ox-rfc-author-list info)
-       "  <date/>"
+       "\n  <date/>\n"
+       (if area (concat "    <area>" area "</area>\n") "")
+       (if workgroup (concat "    <workgroup>" workgroup "</workgroup>\n") "")
+       (mapconcat (lambda (x) (format "<keyword>%s</keyword>\n" x)) keywords "")
        (or (plist-get info :abstract) "")
-       "  </front>"
+       "  </front>\n"
        "  <middle>\n"
        ;; Document contents.
        contents
@@ -1001,6 +1039,7 @@ contextual information."
            ;;      "align=\"%s\""
            ;;    "class=\"org-%s\""))
            )
+      ;; (message "TABLE: table-end orgname %s caption %s\n" orgname caption)
       (if (ox-rfc-render-v3)
           (format "<table%s>\n%s\n%s</table>"
                   anchorattr
@@ -1047,12 +1086,12 @@ INFO is a plist used as a communication channel."
 CONTENTS is the contents of the table.  INFO is a plist holding
 contextual information."
   (let ((v3 (ox-rfc-render-v3)))
-
     (if (plist-get (org-export-get-environment 'rfc) :rfc-ascii-table)
         (org-ascii-table-row table-row contents info)
       (when (eq (org-element-property :type table-row) 'standard)
         (let* ((group (org-export-table-row-group table-row info))
-               ;; (number (org-export-table-row-number table-row info))
+               (table (org-export-get-parent-table table-row))
+               (has-header (org-export-table-has-header-p table info))
                (start-group-p
                 (org-export-table-row-starts-rowgroup-p table-row info))
                (end-group-p
@@ -1065,14 +1104,18 @@ contextual information."
                (row-close-tag (if v3 "</tr>" ""))
                (group-tags
                 (cond
-                 ;; Row belongs to second or subsequent groups.
-                 ((not (= 1 group)) (if v3 '("<tbody>" . "\n</tbody>") '("" . "")))
-                 ;; Row is from first group.  Table has >=1 groups.
-                 ((org-export-table-has-header-p
-                   (org-export-get-parent-table table-row) info)
-                  (if v3 '("<thead>" . "\n</thead>") '("" . "")))
-                 ;; Row is from first and only group.
-                 (t (if v3 '("<tbody>" . "\n</tbody>") '("" . ""))))))
+                 ((and (not v3)
+                       '("" . "")))
+                 ((or (not has-header)
+                      (= 2 group))
+                  '("<tbody>" . "\n</tbody>"))
+                 ((= 1 group)
+                  '("<thead>" . "\n</thead>"))
+                 ((= 3 group)
+                  '("<tfoot>" . "\n</tfoot>"))
+                 (t
+                  (error "tables can only have 1, 2 or 3 row groups")))))
+          ;; (message "ROW:  has-head %s group %s start-group %s contents %s end-group %s" has-header group (car group-tags) contents (cdr group-tags))
           (concat (and start-group-p (car group-tags))
                   (concat row-open-tag contents row-close-tag)
                   (and end-group-p (cdr group-tags))))))))
@@ -1086,30 +1129,34 @@ contextual information."
     (let* ((v3 (ox-rfc-render-v3))
            (table-row (org-export-get-parent table-cell))
            (table (org-export-get-parent-table table-cell))
-           (cell-attrs ""))
+           (has-header (org-export-table-has-header-p table info))
+           (group (org-export-table-row-group table-row info))
+           (align (org-export-table-cell-alignment table-cell info))
+           (cell-attrs (if (eq align 'left) "" (format " align=\"%s\"" align))))
+      ;; (message "CELL: attr %s contents %s" cell-attrs contents)
       (when (or (not contents) (string= "" (org-trim contents)))
         (setq contents "&#xa0;"))
-      (cond
-       ((and (org-export-table-has-header-p table info)
-             (= 1 (org-export-table-row-group table-row info)))
-        (if v3
-            (let ((header-tags '("<th%s>" . "</th>")))
+      (if (and has-header (= 1 group))
+          ;; Header group of cells
+          (if v3
+              (let ((header-tags '("<th%s>" . "</th>")))
+                (concat (format (car header-tags) cell-attrs)
+                        contents
+                        (cdr header-tags)))
+            (let ((header-tags '("<ttcol%s>" . "</ttcol>")))
               (concat (format (car header-tags) cell-attrs)
                       contents
-                      (cdr header-tags)))
-          (let ((header-tags '("<ttcol%s>" . "</ttcol>")))
-            (concat (format (car header-tags) cell-attrs)
-                    contents
-                    (cdr header-tags)))))
-       (t (if v3
-              (let ((data-tags '("<td%s>" . "</td>")))
-                (concat (format (car data-tags) cell-attrs)
-                        contents
-                        (cdr data-tags)))
-            (let ((data-tags '("<c%s>" . "</c>")))
+                      (cdr header-tags))))
+        ;; Non-header group of cells
+        (if v3
+            (let ((data-tags '("<td%s>" . "</td>")))
               (concat (format (car data-tags) cell-attrs)
                       contents
-                      (cdr data-tags)))))))))
+                      (cdr data-tags)))
+          (let ((data-tags '("<c%s>" . "</c>")))
+            (concat (format (car data-tags) cell-attrs)
+                    contents
+                    (cdr data-tags))))))))
 
 ;;;; Verbatim
 
