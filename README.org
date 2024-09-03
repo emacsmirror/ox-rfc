@@ -295,3 +295,11 @@ exporting your ORG file XML and building xml2rfc outputs (HTML, PDF, TXT files).
   ox-rfc.el:
           curl -fLO 'https://raw.githubusercontent.com/choppsv1/org-rfc-export/master/ox-rfc.el'
 #+end_src
+
+
+** Publishing RFCs
+
+Please have a look at this make subproject
+[[https://github.com/choppsv1/yang-org-make]] which can support the automation of
+creating new draft versions and publishing as well as testing your draft and
+any included yang modules.
